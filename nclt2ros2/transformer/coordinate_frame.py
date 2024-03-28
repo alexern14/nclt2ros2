@@ -12,10 +12,10 @@ class CoordinateFrame:
     def __init__(self, origin='odom'):
 
         if isinstance(origin, str):
-            if origin is 'gt':
+            if origin == 'gt':
                 self.lat_origin = 42.293227       # degree
                 self.lon_origin = -83.709657      # degree
-            if origin is 'odom':
+            if origin == 'odom':
                 self.lat_origin = 42.2939096617   # degree
                 self.lon_origin = -83.7083507601  # degree
         else:

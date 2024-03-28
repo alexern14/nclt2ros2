@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import rospy
-from nclt2ros.downloader.download import Download
-from nclt2ros.extractor.extract import Extract
+from nclt2ros2.downloader.download import Download
+from nclt2ros2.extractor.extract import Extract
 from definitions import ROOT_DIR
 
 

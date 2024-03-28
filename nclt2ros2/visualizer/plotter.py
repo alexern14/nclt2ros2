@@ -2,8 +2,8 @@ import os
 import simplekml
 import rospy
 from definitions import ROOT_DIR
-from nclt2ros.extractor.read_sensor_data import ReadSensorData
-from nclt2ros.extractor.read_ground_truth import ReadGroundTruth
+from nclt2ros2.extractor.read_sensor_data import ReadSensorData
+from nclt2ros2.extractor.read_ground_truth import ReadGroundTruth
 
 
 class Plotter:

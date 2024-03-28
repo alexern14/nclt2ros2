@@ -1,14 +1,14 @@
-import rospy
 import struct
 import os
 import numpy as np
 import geometry_msgs.msg
 import tf2_msgs.msg
-import tf.transformations
+import tf_transformations
+import builtin_interfaces
 
 from sensor_msgs.msg import PointCloud2, PointField
-from nclt2ros.extractor.base_raw_data import BaseRawData
-from nclt2ros.converter.base_convert import BaseConvert
+from nclt2ros2.extractor.base_raw_data import BaseRawData
+from nclt2ros2.converter.base_convert import BaseConvert
 
 
 class VelodyneSyncData(BaseRawData, BaseConvert):
@@ -18,8 +18,8 @@ class VelodyneSyncData(BaseRawData, BaseConvert):
             VelodyneSyncData('2013-01-10')
 
     """
-    def __init__(self, date):
 
+    def __init__(self, date):
         # init base classes
         BaseRawData.__init__(self, date=date)
         BaseConvert.__init__(self, date=date)
@@ -33,10 +33,12 @@ class VelodyneSyncData(BaseRawData, BaseConvert):
         if self.velodyne_data_flag:
             files = os.listdir(self.velodyne_sync_data_dir)
         else:
-            raise ValueError('velodyne_data not exists')
+            raise ValueError("velodyne_data not exists")
 
-        timestamps_microsec = sorted([long(os.path.splitext(f)[0]) for f in files if f.endswith('.bin')])
-        bin_files = sorted([f for f in files if f.endswith('.bin')])
+        timestamps_microsec = sorted(
+            [os.path.splitext(f)[0] for f in files if f.endswith(".bin")]
+        )
+        bin_files = sorted([f for f in files if f.endswith(".bin")])
 
         return timestamps_microsec, bin_files
 
@@ -73,16 +75,15 @@ class VelodyneSyncData(BaseRawData, BaseConvert):
 
             hits = []
             while True:
-
                 x_str = f_bin.read(2)
-                if x_str == '':  # eof
+                if x_str == "":  # eof
                     break
 
-                x         = struct.unpack('<H', x_str)[0]
-                y         = struct.unpack('<H', f_bin.read(2))[0]
-                z         = struct.unpack('<H', f_bin.read(2))[0]
-                intensity = struct.unpack('B', f_bin.read(1))[0]
-                laser_id  = struct.unpack('B', f_bin.read(1))[0]
+                x = struct.unpack("<H", x_str)[0]
+                y = struct.unpack("<H", f_bin.read(2))[0]
+                z = struct.unpack("<H", f_bin.read(2))[0]
+                intensity = struct.unpack("B", f_bin.read(1))[0]
+                laser_id = struct.unpack("B", f_bin.read(1))[0]
 
                 x, y, z = self.convert_velodyne(x, y, z)
                 y = y * -1
@@ -107,7 +108,10 @@ class VelodyneSyncData(BaseRawData, BaseConvert):
         """
 
         # create a ros timestamp
-        timestamp = rospy.Time.from_sec(utime / 1e6)
+        timeMsg = builtin_interfaces.msg.Time()
+        timeMsg.sec = int(int(utime) / 1e6)
+        timeMsg.nanosec = int(int(utime) % 1e6) * 1000
+
         points = np.array(hits)
 
         # get velodyne and base link
@@ -116,30 +120,54 @@ class VelodyneSyncData(BaseRawData, BaseConvert):
 
         # create a PointCloud2 message
         pc2_msg = PointCloud2()
-        pc2_msg.header.stamp = timestamp
+        pc2_msg.header.stamp = timeMsg
         pc2_msg.header.frame_id = velodyne_link
 
         num_values = points.shape[0]
-        assert(num_values > 0)
+        assert num_values > 0
 
         NUM_FIELDS = 5
-        assert(np.mod(num_values, NUM_FIELDS) == 0)
+        assert np.mod(num_values, NUM_FIELDS) == 0
 
         num_points = num_values / NUM_FIELDS
 
-        assert(len(points.shape) == 1)
+        assert len(points.shape) == 1
         pc2_msg.height = 1
 
         FLOAT_SIZE_BYTES = 4
         pc2_msg.width = num_values * FLOAT_SIZE_BYTES
 
-        pc2_msg.fields = [
-            PointField('x', 0, PointField.FLOAT32, 1),
-            PointField('y', 4, PointField.FLOAT32, 1),
-            PointField('z', 8, PointField.FLOAT32, 1),
-            PointField('i', 12, PointField.FLOAT32, 1),
-            PointField('l', 16, PointField.FLOAT32, 1)
-        ]
+        x = PointField()
+        x.name = "x"
+        x.offset = 0
+        x.datatype = PointField.FLOAT32
+        x.count = 1
+
+        y = PointField()
+        y.name = "y"
+        y.offset = 4
+        y.datatype = PointField.FLOAT32
+        y.count = 1
+
+        z = PointField()
+        z.name = "z"
+        z.offset = 8
+        z.datatype = PointField.FLOAT32
+        z.count = 1
+
+        i = PointField()
+        i.name = "i"
+        i.offset = 12
+        i.datatype = PointField.FLOAT32
+        i.count = 1
+
+        l = PointField()
+        l.name = "l"
+        l.offset = 16
+        l.datatype = PointField.FLOAT32
+        l.count = 1
+
+        pc2_msg.fields = [x, y, z, i, l]
 
         pc2_msg.is_bigendian = False
         pc2_msg.point_step = NUM_FIELDS * FLOAT_SIZE_BYTES
@@ -147,12 +175,12 @@ class VelodyneSyncData(BaseRawData, BaseConvert):
         pc2_msg.row_step = pc2_msg.point_step * num_points
         pc2_msg.is_dense = False
 
-        pc2_msg.width = num_points
+        pc2_msg.width = int(num_points)
         pc2_msg.data = np.asarray(points, np.float32).tostring()
 
         # create base_link velodyne_link static transformer
         vel_static_transform_stamped = geometry_msgs.msg.TransformStamped()
-        vel_static_transform_stamped.header.stamp = timestamp
+        vel_static_transform_stamped.header.stamp = timeMsg
         vel_static_transform_stamped.header.frame_id = base_link
         vel_static_transform_stamped.child_frame_id = velodyne_link
 
@@ -160,13 +188,14 @@ class VelodyneSyncData(BaseRawData, BaseConvert):
         vel_static_transform_stamped.transform.translation.y = 0.004
         vel_static_transform_stamped.transform.translation.z = 0.957
 
-        quat = tf.transformations.quaternion_from_euler(0, 0, 0)
+        quat = tf_transformations.quaternion_from_euler(0, 0, 0)
         vel_static_transform_stamped.transform.rotation.x = quat[0]
         vel_static_transform_stamped.transform.rotation.y = quat[1]
         vel_static_transform_stamped.transform.rotation.z = quat[2]
         vel_static_transform_stamped.transform.rotation.w = quat[3]
 
         # publish static transform
-        tf_static_msg = tf2_msgs.msg.TFMessage([vel_static_transform_stamped])
+        tf_static_msg = tf2_msgs.msg.TFMessage()
+        tf_static_msg.transforms = [vel_static_transform_stamped]
 
-        return timestamp, pc2_msg, tf_static_msg
+        return int(utime) * 1000, pc2_msg, tf_static_msg

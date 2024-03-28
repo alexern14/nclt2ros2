@@ -1,8 +1,8 @@
 import math
 import matplotlib.pyplot as plt
 
-from nclt2ros.visualizer.plotter import Plotter
-from nclt2ros.transformer.coordinate_frame import CoordinateFrame
+from nclt2ros2.visualizer.plotter import Plotter
+from nclt2ros2.transformer.coordinate_frame import CoordinateFrame
 
 
 class GroundTruth(Plotter):

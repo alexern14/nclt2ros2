@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from nclt2ros.visualizer.visualize import Visualize
+from nclt2ros2.visualizer.visualize import Visualize
 
 
 def main():
