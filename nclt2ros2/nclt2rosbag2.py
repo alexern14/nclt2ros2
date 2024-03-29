@@ -19,12 +19,12 @@ def main():
     # gt = rclpy.get_param("~gt", False)
 
     date = "2012-04-29"
-    bag_name = "nclt"
+    bag_name = "/home/alex/nclt"
     cam_folder = 5
     lb3 = False
-    sen = False
-    hokuyo = False
-    vel = False
+    sen = True
+    hokuyo = True
+    vel = True
     gt = False
 
     converter = ToRosbag2(

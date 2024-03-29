@@ -26,10 +26,10 @@ class HokuyoData(BaseRawData, BaseConvert):
         # load binary files
         if self.hokuyo_data_flag:
             self.f_bin_hokuyo_4m = open(
-                self.hokuyo_data_dir + "/%s/hokuyo_4m.bin" % self.date, "r"
+                self.hokuyo_data_dir + "/%s/hokuyo_4m.bin" % self.date, "rb"
             )
             self.f_bin_hokuyo_30m = open(
-                self.hokuyo_data_dir + "/%s/hokuyo_30m.bin" % self.date, "r"
+                self.hokuyo_data_dir + "/%s/hokuyo_30m.bin" % self.date, "rb"
             )
         else:
             raise ValueError("hokuyo_data directory not exists")
@@ -157,7 +157,7 @@ class HokuyoData(BaseRawData, BaseConvert):
 
             utime = struct.unpack("<Q", utime_str)[0]
 
-            r = np.zeros(num_hits)
+            r = [0.0] * num_hits
             for i in range(num_hits):
                 s = struct.unpack("<H", self.f_bin_hokuyo_30m.read(2))[0]
                 r[i] = self.convert_hokuyo(s)

@@ -74,8 +74,8 @@ class RosSensorMsg(BaseRawData, BaseConvert):
         BaseConvert.__init__(self, date=date)
 
         # create transformer
-        self.tf_broadcast = tf2_ros.TransformBroadcaster()
-        self.static_transform = tf2_ros.StaticTransformBroadcaster()
+        # self.tf_broadcast = tf2_ros.TransformBroadcaster()
+        # self.static_transform = tf2_ros.StaticTransformBroadcaster()
 
         self.i_wheel = 0
         self.last_twist = None
@@ -209,7 +209,7 @@ class RosSensorMsg(BaseRawData, BaseConvert):
         status.service = NavSatStatus.SERVICE_GPS
 
         num_sats = UInt16()
-        num_sats.data = num_satss
+        num_sats.data = int(num_satss)
 
         navsat = NavSatFix()
         navsat.header.stamp = timeMsg

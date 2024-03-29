@@ -78,8 +78,8 @@ class ToRosbag2(BaseRawData, BaseConvert):
         # create rosbag file and check name
         self.bag_name = str(bag_name)
 
-        if not self.bag_name.endswith(".bag"):
-            self.bag_name = self.bag_name + ".bag"
+        if not self.bag_name.endswith(".db3"):
+            self.bag_name = self.bag_name + ".db3"
 
         os.chdir(self.rosbag_dir)
         # check if file already exists
@@ -91,6 +91,7 @@ class ToRosbag2(BaseRawData, BaseConvert):
         # create rosbag file
         self.bag = rosbag2_py.SequentialWriter()
 
+        print(self.bag_name)
         storage_options = rosbag2_py._storage.StorageOptions(
             uri=self.bag_name, storage_id="sqlite3"
         )
@@ -266,7 +267,8 @@ class ToRosbag2(BaseRawData, BaseConvert):
         max_num_messages = 1e20
         num_messages = 0
 
-        while not rclpy.is_shutdown():
+        # while not rclpy.is_shutdown():
+        while True:
             next_packet = "done"
             next_utime = -1
 
@@ -311,7 +313,8 @@ class ToRosbag2(BaseRawData, BaseConvert):
 
             if self.vel:
                 if i_vel < len(vel_sync_timestamps_microsec) and (
-                    vel_sync_timestamps_microsec[i_vel] < next_utime or next_utime < 0
+                    float(vel_sync_timestamps_microsec[i_vel]) < next_utime
+                    or next_utime < 0
                 ):
                     next_utime = vel_sync_timestamps_microsec[i_vel]
                     next_packet = "vel_sync"
@@ -528,10 +531,12 @@ class ToRosbag2(BaseRawData, BaseConvert):
             if num_messages >= max_num_messages:
                 break
 
-        if not rclpy.is_shutdown():
-            self.bag.close()
-            # rclpy.loginfo("successfully finished converting!")
-            print("successfully finished converting!")
+        # if not rclpy.is_shutdown():
+        # self.bag.close()
+        # rclpy.loginfo("successfully finished converting!")
+        print("successfully finished converting!")
+
+        return 0
 
         # self.compress_bag()
 

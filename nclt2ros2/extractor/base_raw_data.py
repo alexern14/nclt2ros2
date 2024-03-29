@@ -23,9 +23,9 @@ class BaseRawData:
 
         # init raw directory
         if self.raw_data_path.endswith("/"):
-            self.raw_data_dir = self.raw_data_path + str(self.date)
+            self.raw_data_dir = self.raw_data_path
         else:
-            self.raw_data_dir = self.raw_data_path + "/" + str(self.date)
+            self.raw_data_dir = self.raw_data_path + "/"
 
         print(self.raw_data_dir)
         # check if data exists
