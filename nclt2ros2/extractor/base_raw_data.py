@@ -15,9 +15,7 @@ class BaseRawData:
         self.date = date
 
         RAW_DATA_PATH_DFLT = ROOT_DIR + "/nclt2ros/raw_data/"
-        RAW_DATA_PATH_DFLT = (
-            "/home/alex/Documents/Foxglove/Datasets/NCLT/"  # TODO remove, only for debugging
-        )
+        RAW_DATA_PATH_DFLT = "/home/alex/Documents/Foxglove/Datasets/NCLT/"  # TODO remove, only for debugging
         # self.raw_data_path = rclpy.get_param("~raw_data_path", RAW_DATA_PATH_DFLT)
         self.raw_data_path = RAW_DATA_PATH_DFLT
 
@@ -36,9 +34,7 @@ class BaseRawData:
             else:
                 self.ground_truth_flag = False
 
-            self.ground_truth_covariance_dir = (
-                self.raw_data_dir + "/ground_truth_covariance"
-            )
+            self.ground_truth_covariance_dir = self.raw_data_dir + "/ground_truth_cov"
             if os.path.exists(self.ground_truth_covariance_dir):
                 self.ground_truth_covariance_flag = True
             else:

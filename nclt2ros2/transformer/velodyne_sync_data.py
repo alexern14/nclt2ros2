@@ -71,7 +71,7 @@ class VelodyneSyncData(BaseRawData, BaseConvert):
 
         try:
             os.chdir(self.velodyne_sync_data_dir)
-            f_bin = open(file, "r")
+            f_bin = open(file, "rb")
 
             hits = []
             while True:
@@ -79,16 +79,20 @@ class VelodyneSyncData(BaseRawData, BaseConvert):
                 if x_str == "":  # eof
                     break
 
-                x = struct.unpack("<H", x_str)[0]
-                y = struct.unpack("<H", f_bin.read(2))[0]
-                z = struct.unpack("<H", f_bin.read(2))[0]
-                intensity = struct.unpack("B", f_bin.read(1))[0]
-                laser_id = struct.unpack("B", f_bin.read(1))[0]
+                try:
+                    x = struct.unpack("<H", x_str)[0]
+                    y = struct.unpack("<H", f_bin.read(2))[0]
+                    z = struct.unpack("<H", f_bin.read(2))[0]
+                    intensity = struct.unpack("B", f_bin.read(1))[0]
+                    laser_id = struct.unpack("B", f_bin.read(1))[0]
 
-                x, y, z = self.convert_velodyne(x, y, z)
-                y = y * -1
-                z = z * -1
-                hits += [x, y, z, intensity, laser_id]
+                    x, y, z = self.convert_velodyne(x, y, z)
+                    y = y * -1
+                    z = z * -1
+                    hits += [x, y, z, intensity, laser_id]
+                except Exception as e:
+                    # print(e)
+                    break
 
             f_bin.close()
 
@@ -172,7 +176,7 @@ class VelodyneSyncData(BaseRawData, BaseConvert):
         pc2_msg.is_bigendian = False
         pc2_msg.point_step = NUM_FIELDS * FLOAT_SIZE_BYTES
 
-        pc2_msg.row_step = pc2_msg.point_step * num_points
+        pc2_msg.row_step = int(pc2_msg.point_step * num_points)
         pc2_msg.is_dense = False
 
         pc2_msg.width = int(num_points)
